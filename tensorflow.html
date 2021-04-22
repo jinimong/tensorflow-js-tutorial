@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
+  </head>
+  <body>
+    <button id="learn">Learn</button>
+    <hr />
+    <div>Inputs: <span id="inputs">[15, 16, 17, 18, 19]</span></div>
+    <div>RMSE: <span id="rmse">-</span></div>
+    <div>Outputs: <span id="outputs">-</span></div>
+    <script>
+      const X = tf.tensor([20, 21, 22, 23]);
+      const Y = tf.tensor([40, 42, 44, 46]);
+
+      const inputs = tf.input({ shape: [1] });
+      const outputs = tf.layers.dense({ units: 1 }).apply(inputs);
+      const model = tf.model({ inputs, outputs });
+      model.compile({
+        optimizer: tf.train.adam(),
+        loss: tf.losses.meanSquaredError,
+      });
+
+      document.getElementById('learn').addEventListener('click', (e) => {
+        document.getElementById('outputs').innerText = 'Loading ...';
+        model
+          .fit(X, Y, {
+            epochs: 100,
+            callbacks: {
+              onEpochEnd: (epoch, { loss }) => {
+                const rmse = Math.sqrt(loss);
+                // console.log(`[epoch-${epoch}] MSE: ${loss}, RMSE: ${rmse}`);
+                document.getElementById('rmse').innerText = rmse;
+              },
+            },
+          })
+          .then((result) => {
+            const nextX = [15, 16, 17, 18, 19];
+            const nextInputs = tf.tensor(nextX);
+            const nextOutputs = model.predict(nextInputs);
+            nextOutputs.print();
+            document.getElementById('outputs').innerText = nextOutputs;
+          });
+      });
+    </script>
+  </body>
+</html>
